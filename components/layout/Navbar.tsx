@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Github, Moon, Search, Sun, Feather, Check, Laptop, Command } from "lucide-react"
+import { Github, Moon, Search, Sun, Feather, Check, Laptop, Command, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/command"
 import { useRouter } from "next/navigation"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 // Navigation links data
 const navLinks = [
@@ -33,6 +34,16 @@ const navLinks = [
   { title: "Input", href: "/docs/components/input", group: "Components" },
   { title: "Tabs", href: "/docs/components/tabs", group: "Components" },
   { title: "Sidebar", href: "/docs/components/sidebar", group: "Components" },
+]
+
+// Main navigation items
+const mainNavItems = [
+  { title: "Docs", href: "/docs" },
+  { title: "Components", href: "/components" },
+  { title: "Blocks", href: "/blocks" },
+  { title: "Charts", href: "/charts" },
+  { title: "Themes", href: "/themes" },
+  { title: "Colors", href: "/colors" },
 ]
 
 // Group items by category
@@ -76,6 +87,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
   
   // Store default themes
@@ -119,6 +131,12 @@ export function Navbar() {
     const newTheme = theme === "dark" ? "light" : "dark"
     applyTheme(newTheme)
   }, [theme, applyTheme])
+
+  // Close mobile menu after navigation
+  const handleMobileNavigation = (href: string) => {
+    setMobileMenuOpen(false)
+    router.push(href)
+  }
 
   // Handle mounting to avoid hydration mismatch with theme
   useEffect(() => {
@@ -164,53 +182,29 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
+        <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2 mr-6">
               <Feather className="h-6 w-6" />
               <span className="font-semibold text-lg">Feather.UI</span>
             </Link>
+            
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-              <Link 
-                href="/docs" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Docs
-              </Link>
-              <Link 
-                href="/components" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Components
-              </Link>
-              <Link 
-                href="/blocks" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Blocks
-              </Link>
-              <Link 
-                href="/charts" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Charts
-              </Link>
-              <Link 
-                href="/themes" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Themes
-              </Link>
-              <Link 
-                href="/colors" 
-                className="transition-colors hover:text-foreground text-foreground/60"
-              >
-                Colors
-              </Link>
+              {mainNavItems.map((item) => (
+                <Link 
+                  key={item.href}
+                  href={item.href} 
+                  className="transition-colors hover:text-foreground text-foreground/60"
+                >
+                  {item.title}
+                </Link>
+              ))}
             </nav>
           </div>
           
-          <div className="flex flex-1 items-center justify-end space-x-4">
+          <div className="flex items-center justify-end space-x-4">
+            {/* Desktop Search */}
             <div className="hidden md:flex relative w-full max-w-sm items-center">
               <div className="relative w-full">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -227,6 +221,18 @@ export function Navbar() {
               </div>
             </div>
             
+            {/* Mobile Search Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden h-9 w-9"
+              onClick={toggleSearch}
+            >
+              <Search className="h-5 w-5" />
+              <span className="sr-only">Search</span>
+            </Button>
+            
+            {/* GitHub and Theme Toggle */}
             <div className="flex items-center space-x-1">
               <Link href="https://github.com/yourusername/feather-ui" target="_blank" rel="noreferrer">
                 <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -245,6 +251,76 @@ export function Navbar() {
                 <span className="sr-only">Toggle theme</span>
               </Button>
             </div>
+            
+            {/* Mobile Menu Button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="md:hidden h-9 w-9"
+                >
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[80%] sm:w-[350px] pr-0">
+                <div className="flex flex-col h-full">
+                  <div className="px-4 py-3 border-b">
+                    <h2 className="text-lg font-semibold">Navigation</h2>
+                  </div>
+                  
+                  <div className="flex-1 overflow-auto py-4">
+                    <nav className="flex flex-col space-y-4">
+                      {mainNavItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="px-4 py-2 text-base font-medium transition-colors hover:bg-muted"
+                          onClick={() => handleMobileNavigation(item.href)}
+                        >
+                          {item.title}
+                        </Link>
+                      ))}
+                    </nav>
+                    
+                    <div className="mt-6 border-t pt-4">
+                      <div className="px-4 mb-2 text-sm font-semibold text-muted-foreground">
+                        Components
+                      </div>
+                      <nav className="flex flex-col space-y-2">
+                        {Object.entries(groupedLinks)
+                          .filter(([group]) => group === "Components")
+                          .flatMap(([_, items]) => items)
+                          .map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="px-4 py-2 text-sm transition-colors hover:bg-muted"
+                              onClick={() => handleMobileNavigation(item.href)}
+                            >
+                              {item.title}
+                            </Link>
+                          ))}
+                      </nav>
+                    </div>
+                    
+                    <div className="mt-4 border-t pt-4 px-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">Theme</span>
+                        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                          {theme === "dark" ? (
+                            <Sun className="h-4 w-4" />
+                          ) : (
+                            <Moon className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
